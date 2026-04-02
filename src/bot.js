@@ -187,6 +187,7 @@ function registerEvents(bot, goalManager) {
       goalManager.running = false;
       goalManager.currentGoal  = null;
       goalManager.currentToken = null;
+      startWorldScanner(bot);
       setTimeout(() => goalManager.start(), 2000);
     });
   });
@@ -217,9 +218,12 @@ function registerEvents(bot, goalManager) {
 /**
  * Periodically scan the world and update goal-decision counters.
  * Runs every 3 seconds independently of the goal loop.
+ * Returns the interval ID so the caller can clear it on disconnect.
  */
+let _scannerInterval = null;
 function startWorldScanner(bot) {
-  setInterval(() => {
+  if (_scannerInterval) clearInterval(_scannerInterval);
+  _scannerInterval = setInterval(() => {
     try {
       // Update drop count for PickupDropsGoal
       const drops = world.getNearbyDroppedItems(
@@ -237,6 +241,11 @@ function startWorldScanner(bot) {
       // Bot might be in a weird state — ignore
     }
   }, 3000);
+
+  bot.once('end', () => {
+    clearInterval(_scannerInterval);
+    _scannerInterval = null;
+  });
 }
 
 module.exports = { createMinecraftBot };

@@ -138,6 +138,7 @@ function reactToPlayerNearby(playerName) {
 // ── Utility ───────────────────────────────────────────────────────────────
 
 function pick(arr) {
+  if (!arr.length) return '';
   return arr[Math.floor(Math.random() * arr.length)];
 }
 

@@ -47,12 +47,12 @@ async function goToXZ(bot, x, z) {
 /**
  * Follow a player or entity until `stopFn` returns true.
  */
-async function followEntity(bot, entity, range = 3, stopFn = () => false) {
+async function followEntity(bot, entity, range = 3, stopFn = () => false, token = null) {
   try {
     const goal = new GoalFollow(entity, range);
     bot.pathfinder.setGoal(goal, true); // true = dynamic
-    // Poll until stopFn says to stop
-    while (!stopFn()) {
+    // Poll until stopFn says to stop or token is cancelled
+    while (!stopFn() && !(token && token.cancelled)) {
       await sleep(500);
     }
     bot.pathfinder.stop();

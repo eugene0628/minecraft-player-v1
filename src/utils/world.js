@@ -42,9 +42,10 @@ function getNearbyDroppedItems(bot, radius = 16) {
 
 /** Returns true if it is currently night time in-game. */
 function isNight(bot) {
-  // timeOfDay 13000–23000 is night
+  // Hostile mobs begin spawning at ~12542 (light levels drop at dusk).
+  // Use 12500 as a safe threshold so the bot doesn't mine during dangerous dusk.
   const t = bot.time.timeOfDay;
-  return t >= 13000 && t <= 23000;
+  return t >= 12500 && t <= 23000;
 }
 
 /** Returns a human-readable time of day string. */
@@ -101,6 +102,7 @@ function hasSolidGround(bot, pos) {
  * that could serve as shelter (has a roof-like block above).
  */
 function isUnderCover(bot) {
+  if (!bot.entity) return false;
   const pos = bot.entity.position.floored();
   // Check a few blocks above the bot's head for a ceiling
   for (let dy = 1; dy <= 3; dy++) {
@@ -130,7 +132,7 @@ function randomNearbyPosition(origin, radius) {
 }
 
 /** Build a state snapshot for LLM / goal priority evaluation. */
-function buildStateSnapshot(bot, inventoryUtils) {
+function buildStateSnapshot(bot, inventoryUtils, extraCounts = {}) {
   return {
     health: bot.health,
     food: bot.food,
@@ -141,6 +143,9 @@ function buildStateSnapshot(bot, inventoryUtils) {
     nearbyHostiles: getNearbyHostiles(bot, 16).map(e => e.name),
     nearbyPlayers: getNearbyPlayers(bot, 32).map(e => e.username),
     inventory: inventoryUtils.getSummary(bot),
+    // Counts from the world scanner — included so goal logic reads from state, not module globals
+    nearbyDropCount: extraCounts.nearbyDropCount || 0,
+    nearbyChestCount: extraCounts.nearbyChestCount || 0,
   };
 }
 

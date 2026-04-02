@@ -56,18 +56,15 @@ async function buildShelter(bot, token) {
         if (token.cancelled) return placed > 0;
 
         // Floor
-        await placeBlockAt(bot, pos.offset(dx, -1, dz));
-        placed++;
+        if (await placeBlockAt(bot, pos.offset(dx, -1, dz))) placed++;
 
         // Ceiling
-        await placeBlockAt(bot, pos.offset(dx, 2, dz));
-        placed++;
+        if (await placeBlockAt(bot, pos.offset(dx, 2, dz))) placed++;
 
         // Walls (only on edges)
         if (Math.abs(dx) === 1 || Math.abs(dz) === 1) {
-          await placeBlockAt(bot, pos.offset(dx, 0, dz));
-          await placeBlockAt(bot, pos.offset(dx, 1, dz));
-          placed += 2;
+          if (await placeBlockAt(bot, pos.offset(dx, 0, dz))) placed++;
+          if (await placeBlockAt(bot, pos.offset(dx, 1, dz))) placed++;
         }
       }
     }
@@ -89,7 +86,7 @@ async function placeBlockAt(bot, targetPos) {
   try {
     // Check if block already exists there
     const existing = bot.blockAt(targetPos);
-    if (existing && existing.boundingBox === 'block') return; // already solid
+    if (existing && existing.boundingBox === 'block') return true; // already solid
 
     // Find a solid adjacent block to place against
     const faces = [
@@ -106,11 +103,13 @@ async function placeBlockAt(bot, targetPos) {
         await navigation.goTo(bot, targetPos, 4);
         await bot.placeBlock(refBlock, new Vec3(-fx, -fy, -fz));
         await sleep(100);
-        return;
+        return true;
       }
     }
+    return false; // no valid reference face found
   } catch (err) {
     logger.debug(`placeBlockAt failed at ${targetPos}: ${err.message}`);
+    return false;
   }
 }
 

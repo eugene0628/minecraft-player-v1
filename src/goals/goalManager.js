@@ -3,6 +3,7 @@ const logger = require('../utils/logger');
 const config = require('../../config');
 const worldUtils = require('../utils/world');
 const invUtils   = require('../utils/inventory');
+const { getNearbyDropCount, getNearbyChestCount } = require('./gatherGoals');
 
 /**
  * CancellationToken — passed to each running goal.
@@ -49,7 +50,10 @@ class GoalManager {
   /** Build a snapshot of the current world state for goal evaluation. */
   getState() {
     try {
-      return worldUtils.buildStateSnapshot(this.bot, invUtils);
+      return worldUtils.buildStateSnapshot(this.bot, invUtils, {
+        nearbyDropCount: getNearbyDropCount(),
+        nearbyChestCount: getNearbyChestCount(),
+      });
     } catch (err) {
       // Bot might not be fully spawned yet
       return {
@@ -62,6 +66,8 @@ class GoalManager {
         nearbyHostiles: [],
         nearbyPlayers: [],
         inventory: { items: {}, freeSlots: 36, hasFood: false, hasSword: false, hasPickaxe: false },
+        nearbyDropCount: 0,
+        nearbyChestCount: 0,
       };
     }
   }

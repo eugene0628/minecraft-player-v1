@@ -88,9 +88,9 @@ function findBestTool(bot, type) {
 
 /** How many free inventory slots does the bot have? */
 function freeSlots(bot) {
-  // Inventory has 36 slots (27 main + 9 hotbar)
+  const INVENTORY_SIZE = 36; // 27 main + 9 hotbar (vanilla)
   const used = bot.inventory.items().length;
-  return 36 - used;
+  return Math.max(0, INVENTORY_SIZE - used);
 }
 
 /** Return a summary object for logging / LLM context. */

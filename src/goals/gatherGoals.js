@@ -36,12 +36,12 @@ const PickupDropsGoal = {
 };
 
 function countNearbyDrops(state) {
-  // We can't easily query entity count from the state snapshot,
-  // so we keep a module-level cache updated by the bot event handler.
-  return _nearbyDropCount;
+  // Read from the state snapshot (populated by the world scanner via goalManager)
+  return state.nearbyDropCount || 0;
 }
 let _nearbyDropCount = 0;
 function setNearbyDropCount(n) { _nearbyDropCount = n; }
+function getNearbyDropCount() { return _nearbyDropCount; }
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  CRAFT TOOLS GOAL  (priority ~60 when missing basic tools)
@@ -213,12 +213,12 @@ const LootChestsGoal = {
     // Only loot when no immediate threats and not at night
     if (state.nearbyHostiles.length > 0) return 0;
     if (state.isNight) return 0;
-    return _nearbyChestCount > 0 ? 35 : 0;
+    return state.nearbyChestCount > 0 ? 35 : 0;
   },
 
   canRun(state) {
     return (
-      _nearbyChestCount > 0 &&
+      state.nearbyChestCount > 0 &&
       state.nearbyHostiles.length === 0 &&
       state.inventory.freeSlots > 4
     );
@@ -265,6 +265,7 @@ const LootChestsGoal = {
 
 let _nearbyChestCount = 0;
 function setNearbyChestCount(n) { _nearbyChestCount = n; }
+function getNearbyChestCount() { return _nearbyChestCount; }
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Helpers
@@ -279,7 +280,9 @@ function countWood(state) {
   const items = state.inventory.items;
   return mining.WOOD_LOGS.reduce((s, log) => {
     const plank = log.replace('_log', '_planks');
-    return s + (items[log] || 0) + Math.floor((items[plank] || 0) / 4);
+    // Use ceil so any planks (even 1–3) count as at least 1 log-equivalent,
+    // preventing the bot from treating 3 planks as "critical" (0 wood).
+    return s + (items[log] || 0) + Math.ceil((items[plank] || 0) / 4);
   }, 0);
 }
 
@@ -291,4 +294,6 @@ module.exports = {
   LootChestsGoal,
   setNearbyDropCount,
   setNearbyChestCount,
+  getNearbyDropCount,
+  getNearbyChestCount,
 };

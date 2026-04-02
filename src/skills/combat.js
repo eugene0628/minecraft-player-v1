@@ -37,39 +37,39 @@ async function fightEntity(bot, entity, token) {
 
 async function fightWithPvpPlugin(bot, entity, token) {
   return new Promise((resolve) => {
-    bot.pvp.attack(entity);
-
-    const cleanup = () => {
+    let settled = false;
+    const settle = (result) => {
+      if (settled) return;
+      settled = true;
       bot.pvp.stop();
-      resolve(true);
+      resolve(result);
     };
 
-    bot.once('stoppedAttacking', () => resolve(true));
+    bot.pvp.attack(entity);
+    bot.once('stoppedAttacking', () => settle(true));
 
-    // Watch for cancellation
+    // Watch for cancellation, entity death, and health threshold
     const interval = setInterval(() => {
       if (token.cancelled) {
         clearInterval(interval);
-        cleanup();
+        settle(false);
+        return;
       }
-      // Check if entity is gone
       if (!entity.isValid || entity.health <= 0) {
         clearInterval(interval);
-        cleanup();
+        settle(true);
+        return;
       }
-      // Flee if health too low
       if (bot.health <= config.survival.fleeHealthThreshold) {
         clearInterval(interval);
-        bot.pvp.stop();
-        resolve(false); // false = didn't win cleanly
+        settle(false);
       }
     }, 500);
 
     // Safety timeout (30s)
     setTimeout(() => {
       clearInterval(interval);
-      bot.pvp.stop();
-      resolve(false);
+      settle(false);
     }, 30000);
   });
 }
