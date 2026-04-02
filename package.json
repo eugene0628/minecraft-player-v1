@@ -1,0 +1,26 @@
+{
+  "name": "minecraft-player-v1",
+  "version": "1.0.0",
+  "description": "Autonomous AI Minecraft bot with a selfish personality, powered by Mineflayer and Ollama",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "keywords": ["minecraft", "bot", "mineflayer", "ai", "ollama", "autonomous"],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "mineflayer": "^4.23.0",
+    "mineflayer-pathfinder": "^2.4.5",
+    "mineflayer-pvp": "^1.3.2",
+    "mineflayer-collectblock": "^1.4.1",
+    "mineflayer-auto-eat": "^5.0.0",
+    "mineflayer-armor-manager": "^2.0.1",
+    "minecraft-data": "^3.69.0",
+    "dotenv": "^16.4.5",
+    "vec3": "^0.1.10"
+  }
+}
